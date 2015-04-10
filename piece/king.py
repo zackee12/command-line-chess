@@ -1,7 +1,7 @@
 from piece.base import SingleMovePiece
 from piece.rook import Rook
 from board.location import Location
-from util.enums import Player, Side
+from util.enums import Side
 from board.move import Move
 
 
@@ -18,10 +18,21 @@ class King(SingleMovePiece):
     ]
 
     def checked(self, location=None):
+        """ Check if the king is in check
+
+        :param location: Location or none (defaults to current location)
+        :return: boolean
+        """
         location = self.location if location is None else location
         return location in self.board.attacked_locations(self.player.opponent())
 
     def can_castle(self, side):
+        """ Determine if a king can castle to a certain side
+
+        :param side: Side enum
+        :return: boolean
+        """
+        # king can't have moved
         if not self.moved:
             rook = self._get_unmoved_rook(side)
             if rook is not None:
@@ -33,6 +44,11 @@ class King(SingleMovePiece):
         return False
 
     def _get_unmoved_rook(self, side):
+        """ Try to get an unmoved rook based on the starting location
+
+        :param side: Side enum
+        :return: Rook or none if moved / captured
+        """
         if side == Side.KING:
             rook = self.board.piece(Location(self.location.row, Location.COLS[-1]), self.player)
         else:
@@ -42,6 +58,10 @@ class King(SingleMovePiece):
         return None
 
     def moves(self):
+        """ Get all possible moves by this piece (unvalidated moves)
+
+        :return: Move generator
+        """
         yield from super().moves()
 
         if self.can_castle(Side.KING):
