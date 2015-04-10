@@ -1,7 +1,7 @@
 from board import Board
 from board.move import Move
 from util import input_parser
-from util.printer import print_moves
+import util.printer as printer
 from util.enums import Player
 
 if __name__ == '__main__':
@@ -25,16 +25,18 @@ if __name__ == '__main__':
         if player is None or board.turn == player:
             cmd = input_parser.cmd(board)
 
-            if isinstance(cmd, Move):
+            if isinstance(cmd, Move): # move
                 board.move(cmd)
-                print(board)
-            elif cmd == 'q':
+                printer.print_board(board)
+            elif cmd == 'q':  # quit
                 break
-            elif cmd == 'r':
+            elif cmd == 'r':  # random move
                 board.random_move()
-                print(board)
-            elif cmd == 'l':
-                print_moves(board.valid_moves())
+                printer.print_board(board)
+            elif cmd == 'l':  # list possible moves
+                printer.print_moves(board)
+            elif cmd == 's':  # current score
+                printer.print_moves(board)
             else:
                 pass
         else:

@@ -36,7 +36,7 @@ def cmd(board):
 
 def parse(board, text):
     text = text.lower().strip()
-    if text == 'q' or text == 'r' or text == 'l':
+    if text == 'q' or text == 'r' or text == 'l' or 's':
         return text
     else:
         if re.match('^[a-h][1-9] [a-h][1-9]$', text):
