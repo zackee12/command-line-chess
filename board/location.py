@@ -2,10 +2,19 @@ from util.enums import Color
 
 
 class Location:
+    """
+    Location on a chessboard
+    """
     ROWS = [1, 2, 3, 4, 5, 6, 7, 8]  # RANKS
     COLS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']  # FILES
 
     def __init__(self, row, col):
+        """ initializer
+
+        :param row: integer
+        :param col: str
+        :return:
+        """
         # validate the input
         if row not in self.ROWS:
             raise ValueError("'{}' is not a valid location")
