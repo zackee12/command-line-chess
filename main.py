@@ -5,27 +5,31 @@ import util.printer as printer
 from util.enums import Player
 
 if __name__ == '__main__':
+    # get desired player or None for two player
     player = input_parser.player()
 
     # load and print initial board
     board = Board(True)
-    print(board)
+    printer.print_board(board)
 
     # game loop
     while True:
+        # if checkmate then end the game
         if board.checkmate():
             print('{} wins by checkmate'.format(Player.opponent(board.turn)))
             break
+        # if draw then end the game
         if board.draw():
             print('draw!')
             break
+        # print check message
         if board.check(board.turn):
             print('check!!!')
 
         if player is None or board.turn == player:
             cmd = input_parser.cmd(board)
 
-            if isinstance(cmd, Move): # move
+            if isinstance(cmd, Move):  # move
                 board.move(cmd)
                 printer.print_board(board)
             elif cmd == 'q':  # quit
