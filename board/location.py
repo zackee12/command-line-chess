@@ -6,18 +6,19 @@ class Location:
     COLS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']  # FILES
 
     def __init__(self, row, col):
-        self.row, self.col = row, col.lower()
+        # validate the input
+        if row not in self.ROWS:
+            raise ValueError("'{}' is not a valid location")
+        elif col not in self.COLS:
+            raise ValueError("'{}' is not a valid location")
 
-        if self.row not in self.ROWS:
-            raise ValueError("'{}' is not a valid location")
-        elif self.col not in self.COLS:
-            raise ValueError("'{}' is not a valid location")
+        self.row, self.col = row, col.lower()
 
     @property
     def color(self):
         """ Color of the board location
 
-        :return: BLACK or WHITE
+        :return: Color enum
         """
         even_col = self.COLS.index(self.col) % 2 == 0
         even_row = self.ROWS.index(self.row) % 2 == 0
@@ -41,6 +42,10 @@ class Location:
 
     @property
     def end_of_row(self):
+        """ Check if the current location is on the top or bottom row of the board
+
+        :return: boolean
+        """
         return self.row == self.ROWS[0] or self.row == self.ROWS[-1]
 
     def __repr__(self):
@@ -68,6 +73,11 @@ class Location:
 
     @classmethod
     def from_string(cls, location):
+        """ Create the location class from the string representation
+
+        :param location: str
+        :return: Location
+        """
         if len(location) != 2:
             raise ValueError('string must be 2 characters (e.g. a5)')
 
@@ -79,6 +89,13 @@ class Location:
 
     @classmethod
     def from_between(cls, l1, l2, inclusive=False):
+        """ Create locations between two locations
+
+        :param l1: start Location
+        :param l2: stop Location
+        :param inclusive: include l1 and l2
+        :return: Location generator
+        """
         if l1.row == l2.row:
             low_idx = min(cls.COLS.index(l1.col), cls.COLS.index(l2.col))
             high_idx = max(cls.COLS.index(l1.col), cls.COLS.index(l2.col)) + 1
