@@ -8,12 +8,12 @@ from board.move import Move
 
 
 class Pawn(Piece):
-
-    def __init__(self, location, player, board):
-        super().__init__(location, player, board)
-
     @property
     def en_passant_vulnerable(self):
+        """ Check if a pawn is vulnerable to an en passant attack
+
+        :return: boolean
+        """
         last_move = self.board.last_move()
         # if the last move was this piece and it moved by two spaces then it is vulnerable
         return (last_move is not None and
@@ -21,6 +21,10 @@ class Pawn(Piece):
                 abs(last_move.old_location.row - last_move.new_location.row) == 2)
 
     def attacked_locations(self):
+        """ Get all locations under attack by this piece
+
+        :return: Location generator
+        """
         for col in [-1, 1]:
             loc = self.location.offset(self.direction, col)
             # pawn can only attack when opponent is diagonal
@@ -28,23 +32,30 @@ class Pawn(Piece):
                 yield loc
 
     def moves(self):
+        """ Get all possible moves by this piece (unvalidated moves)
+
+        :return: Move generator
+        """
+        # check attacking moves for promotions
         for move in super().moves():
             if move.new_location.end_of_row:
                 for t in [Queen, Rook, Bishop, Knight]:
                     yield Move.create_promotion(self, move.new_location, t, move.captured_piece)
             else:
                 yield move
-        #yield from super().moves()
 
         up1 = self.location.offset(self.direction, 0)
         up2 = up1.offset(self.direction, 0)
         # if space ahead is empty then can move
         if self.board.empty(up1):
+            # check move for promotions
             if up1.end_of_row:
                 for t in [Queen, Rook, Bishop, Knight]:
                     yield Move.create_promotion(self, up1, t)
             else:
+                # regular move
                 yield Move(self, up1)
+
             # if on the first move the two spaces ahead is empty then can move
             if not self.moved and self.board.empty(up2):
                 yield Move(self, up2)
@@ -58,4 +69,8 @@ class Pawn(Piece):
 
     @property
     def direction(self):
+        """ Get the direction that a pawn moves
+
+        :return: -1 or 1
+        """
         return -1 if self.player == Player.BLACK else 1
