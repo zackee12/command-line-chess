@@ -36,7 +36,7 @@ if __name__ == '__main__':
             elif cmd == 'l':  # list possible moves
                 printer.print_moves(board)
             elif cmd == 's':  # current score
-                printer.print_moves(board)
+                printer.print_score(board)
             else:
                 pass
         else:
