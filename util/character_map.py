@@ -4,8 +4,11 @@ from util.enums import Player, Color
 
 
 class CharacterMap:
+    """
+    Map for various representations of the chess pieces
+    """
     CHARACTERS = {
-        (Player.WHITE, King): ('\u2654', 'k', 'K'),
+        (Player.WHITE, King): ('\u2654', 'k', 'K'),  # (unicode, ascii, algebraic)
         (Player.WHITE, Queen): ('\u2655', 'q', 'Q'),
         (Player.WHITE, Rook): ('\u2656', 'r', 'R'),
         (Player.WHITE, Bishop): ('\u2657', 'b', 'B'),
@@ -26,6 +29,10 @@ class CharacterMap:
 
     @classmethod
     def _unicode(cls):
+        """ Check if unicode characters can be printed to stdout
+
+        :return: boolean
+        """
         for c, _, _ in cls.CHARACTERS.values():
             try:
                 c.encode(sys.stdout.encoding)
@@ -33,16 +40,41 @@ class CharacterMap:
                 return False
         return True
 
-    def character(self, player_or_color, piece_type=None):
-        return self.CHARACTERS[(player_or_color, piece_type)][1]
-
     def unicode_character(self, player_or_color, piece_type=None):
+        """ Return the unicode character representation of a piece or tile
+
+        :param player_or_color: Player enum or Color enum
+        :param piece_type: Class of piece (e.g. Pawn) or None if looking for tile character
+        :return: str
+        """
         return self.CHARACTERS[(player_or_color, piece_type)][0]
 
+    def character(self, player_or_color, piece_type=None):
+        """ Return the ascii character representation of a piece or tile
+
+        :param player_or_color: Player enum or Color enum
+        :param piece_type: Class of piece (e.g. Pawn) or None if looking for tile character
+        :return: str
+        """
+        return self.CHARACTERS[(player_or_color, piece_type)][1]
+
     def algebraic_notation(self, player, piece_type):
+        """ Return the algebraic notation for a piece
+
+        :param player: Player enum
+        :param piece_type: Class of piece (e.g. Pawn)
+        :return: str
+        """
         return self.CHARACTERS[(player, piece_type)][2]
 
     def __call__(self, player_or_color, piece_type=None):
+        """ Return the unicode/ascii character representation of a piece or tile depending on what is printable
+
+        :param player_or_color: Player enum or Color enum
+        :param piece_type: Class of piece (e.g. Pawn) or None if looking for tile character
+        :return: str
+        """
+        # return unicode if available to print
         if self.unicode:
             return self.unicode_character(player_or_color, piece_type)
         return self.character(player_or_color, piece_type)
