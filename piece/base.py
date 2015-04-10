@@ -1,38 +1,64 @@
-from util.enums import Player, Side
 from board.move import Move
 
 
 class Piece:
-    VALUE = 0
+    """
+    Base class for all chess pieces
+    """
+    VALUE = 0  # value to be used for calculating score
 
     def __init__(self, location, player, board):
+        """ initializer
+
+        :param location: Location of piece
+        :param player: Player that owns piece
+        :param board: Board object that piece is placed on
+        :return:
+        """
         self.player = player
         self.location = location
         self._initial_position = location
-        self._board = board
+        self.board = board
         self._total_moves = 0
 
+        # ensure a piece doesn't already exist at the location
         if not self.board.empty(location):
             raise ValueError('board already contains a piece at {}'.format(location))
 
-        self._board.add(self)
+        # add self to the board
+        self.board.add(self)
 
     @property
     def moved(self):
+        """ Check if the piece has moved
+
+        :return:
+        """
         return self._total_moves > 0
 
-    @property
-    def board(self):
-        return self._board
-
     def move(self, location, undo=False):
+        """ Move the piece to the given location and update the total moves
+
+        :param location: new location for pawn
+        :param undo: boolean that indicates if total moves should be increased or descreased
+        :return:
+        """
         self.location = location
         self._total_moves += (-1 if undo else 1)
 
     def attacked_locations(self):
+        """ Get all locations under attack by this piece
+
+        Sub classes should implement
+        :return: Location generator
+        """
         raise NotImplementedError
 
     def moves(self):
+        """ Get all possible moves by this piece (unvalidated moves)
+
+        :return: Move generator
+        """
         for loc in self.attacked_locations():
             yield Move(self, loc, self.board.piece(loc, self.player.opponent()))
 
@@ -41,14 +67,21 @@ class Piece:
             .format(self.__class__.__name__, repr(self.player), repr(self.location), self.board.__class__.__name__)
 
     def __str__(self):
+        """ Get string representation of piece using the character map"""
         return self.board.character_map(self.player, self.__class__)
 
 
 class SingleMovePiece(Piece):
-    """ Makes 1 move based on the MOVE_VECTORS unless off the board"""
-    MOVE_VECTORS = []
+    """
+    Base class for chess pieces that make moves based on a single move offset (e.g. king)
+    """
+    MOVE_VECTORS = []  # offsets that piece can move from current location
 
     def attacked_locations(self):
+        """ Get all locations under attack by this piece
+
+        :return: Location generator
+        """
         for row, col in self.MOVE_VECTORS:
             loc = self.location.offset(row, col)
             if loc is not None:
@@ -61,10 +94,16 @@ class SingleMovePiece(Piece):
 
 
 class MultipleMovePiece(Piece):
-    """ Makes moves from the MOVE_VECTORS until off the board or blocked"""
-    MOVE_VECTORS = []
+    """
+    Base class for chess pieces that make moves based on multiple move offset (continuous) (e.g. Queen)
+    """
+    MOVE_VECTORS = []  # offsets that piece can move from current location
 
     def attacked_locations(self):
+        """ Get all locations under attack by this piece
+
+        :return: Location generator
+        """
         # try each tuple in the move vectors
         for row, col in self.MOVE_VECTORS:
             loc = self.location
