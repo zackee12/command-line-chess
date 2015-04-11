@@ -48,5 +48,5 @@ if __name__ == '__main__':
         else:
             # ai turn
             board.random_move()
-            print(board)
+            printer.print_board(board)
 
