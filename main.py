@@ -10,6 +10,7 @@ if __name__ == '__main__':
 
     # load and print initial board
     board = Board(True)
+    unicode = input_parser.use_unicode(board)
     printer.print_board(board)
 
     # game loop
@@ -26,6 +27,7 @@ if __name__ == '__main__':
         if board.check(board.turn):
             print('check!!!')
 
+        # if a human then ask for input
         if player is None or board.turn == player:
             cmd = input_parser.cmd(board)
 
