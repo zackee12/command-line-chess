@@ -8,6 +8,8 @@ from board.move import Move
 
 
 class Pawn(Piece):
+    VALUE = 1
+
     @property
     def en_passant_vulnerable(self):
         """ Check if a pawn is vulnerable to an en passant attack
