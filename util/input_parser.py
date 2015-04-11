@@ -87,7 +87,7 @@ def parse(board, text):
             c = CHAR_TO_CLASS[c]
             return create_move(board, matches[0], matches[1], c)
         else:
-            raise IOError('command is invalid')
+            raise IOError("'{}' command is invalid".format(text))
 
 
 def create_move(board, from_location, to_location, promotion_class=None):
