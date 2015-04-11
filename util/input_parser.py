@@ -10,6 +10,20 @@ CHAR_TO_CLASS = {
 }
 
 
+def use_unicode(board):
+    if board.character_map.unicode:
+        while True:
+            c = input('would you like to use unicode chess figures? (y/n): ').lower()
+            if c == 'y':
+                return True
+            elif c == 'n':
+                board.character_map.unicode = False
+                return False
+            else:
+                print('try again: invalid y/n')
+    return False
+
+
 def player():
     """ Prompt the user to enter the number of players and desired color if single player
 
