@@ -2,6 +2,13 @@ import re
 from util.enums import Player
 from piece import Queen, Rook, Bishop, Knight
 
+CHAR_TO_CLASS = {
+    'q': Queen,
+    'r': Rook,
+    'b': Bishop,
+    'n': Knight,
+}
+
 
 def player():
     """ Prompt the user to enter the number of players and desired color if single player
@@ -63,7 +70,7 @@ def parse(board, text):
         elif re.match('^[a-h][1-9] [a-h][1-9] [qrbn]$', text):
             matches = re.findall('[a-h][1-9]', text)
             c = re.findall('[qrbn]', text)[-1]
-            c = promotion_char_to_class(c)
+            c = CHAR_TO_CLASS[c]
             return create_move(board, matches[0], matches[1], c)
         else:
             raise IOError('command is invalid')
@@ -99,22 +106,3 @@ def create_move(board, from_location, to_location, promotion_class=None):
         raise IOError('move from {} to {} is not possible'.format(from_location, to_location))
     raise IOError('move from {} to {} with {} promotion is not possible'
                   .format(from_location, to_location, promotion_class.__name__.lower()))
-
-
-def promotion_char_to_class(c):
-    """ Convert promotion character into a class
-
-    :param c: str character
-    :return: class of piece
-    """
-    if c == 'q':
-        c = Queen
-    elif c == 'r':
-        c = Rook
-    elif c == 'b':
-        c = Bishop
-    elif c == 'n':
-        c = Knight
-    else:
-        raise IOError('promotion class does not exist for character: {}'.format(c))
-    return c
