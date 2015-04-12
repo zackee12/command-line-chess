@@ -172,13 +172,13 @@ class TestBoard(TestCase):
             self.board.random_move()
 
     def test_score(self):
-        self.assertEquals(self.board2.score(Player.WHITE), 0)
+        self.assertEquals(self.board2.score(Player.BLACK), 0)
         p = Pawn(Location(2, 'a'), Player.WHITE, self.board2)
         self.board2.remove(p)
-        self.assertEquals(self.board2.score(Player.WHITE), Pawn.VALUE)
+        self.assertEquals(self.board2.score(Player.BLACK), Pawn.VALUE)
         k = Knight(Location(3, 'a'), Player.WHITE, self.board2)
         self.board2.remove(k)
-        self.assertEquals(self.board2.score(Player.WHITE), Pawn.VALUE + Knight.VALUE)
+        self.assertEquals(self.board2.score(Player.BLACK), Pawn.VALUE + Knight.VALUE)
 
     def test_last_move(self):
         self.assertEquals(self.board2.last_move(), None)
