@@ -63,9 +63,10 @@ class Pawn(Piece):
         # en passant
         for col in [-1, 1]:
             loc = self.location.offset(0, col)
-            p = self.board.piece(loc, self.player.opponent())
-            if isinstance(p, Pawn) and p.en_passant_vulnerable:
-                yield Move.create_en_passant(self, loc.offset(self.direction, 0), p)
+            if loc is not None:
+                p = self.board.piece(loc, self.player.opponent())
+                if isinstance(p, Pawn) and p.en_passant_vulnerable:
+                    yield Move.create_en_passant(self, loc.offset(self.direction, 0), p)
 
     @property
     def direction(self):
