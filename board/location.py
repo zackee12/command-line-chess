@@ -67,10 +67,11 @@ class Location:
         return hash(str(self))
 
     def __eq__(self, other):
-        if hasattr(other, 'col') and hasattr(other, 'row'):
+        if self.__class__ is other.__class__:  # hasattr(other, 'col') and hasattr(other, 'row'):
             return (self.col, self.row) == (other.col, other.row)
-        else:
+        elif other.__class__ is str:
             return str(self) == str(other)
+        return NotImplemented
 
     def __getitem__(self, index):
         if index == 0:
