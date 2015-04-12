@@ -226,7 +226,7 @@ class Board:
         player = self.turn if player is None else player
         s = 0
         for p in self._removed_pieces:
-            if p.player == player:
+            if p.player != player:
                 s += p.VALUE
         return s
 
