@@ -174,10 +174,10 @@ class TestBoard(TestCase):
     def test_score(self):
         self.assertEquals(self.board2.score(Player.BLACK), 0)
         p = Pawn(Location(2, 'a'), Player.WHITE, self.board2)
-        self.board2.remove(p)
+        self.board2.capture_piece(p)
         self.assertEquals(self.board2.score(Player.BLACK), Pawn.VALUE)
         k = Knight(Location(3, 'a'), Player.WHITE, self.board2)
-        self.board2.remove(k)
+        self.board2.capture_piece(k)
         self.assertEquals(self.board2.score(Player.BLACK), Pawn.VALUE + Knight.VALUE)
 
     def test_last_move(self):

@@ -124,3 +124,9 @@ class Location:
                 yield cls(i, l1.col)
         else:
             raise ValueError('locations must be on the same row or column')
+
+    @classmethod
+    def all(cls):
+        for row in cls.ROWS:
+            for col in cls.COLS:
+                yield cls(row, col)

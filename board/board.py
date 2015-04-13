@@ -15,9 +15,10 @@ class Board:
         :param new_game: initialize a new game with pieces
         :return:
         """
-        self._pieces = []  # live pieces
+        self._pieces_by_location = {l: None for l in Location.all()}
+        self._pieces = []
         self._promoted_pawns = []  # pawns that are removed due to being promoted
-        self._removed_pieces = []  # pieces that are captured
+        self._captured_pieces = []
         self._moves = []  # history of moves
         self.character_map = CharacterMap()  # piece character map
         self.turn = Player.WHITE  # current player's turn
@@ -56,48 +57,55 @@ class Board:
         King(Location(1, 'e'), Player.WHITE, self)
         Queen(Location(1, 'd'), Player.WHITE, self)
 
-    def add(self, piece):
-        """ Add a piece to the board
-
-        :param piece: piece should inherit from Piece
-        :return: None
-        """
+    def add_piece(self, piece):
+        if not self.empty(piece.location):
+            raise ValueError('board already contains a piece at {}'.format(piece.location))
         self._pieces.append(piece)
+        self._pieces_by_location[piece.location] = piece
 
-    def remove(self, piece):
-        """ Remove (aka capture) a piece from the board
-
-        :param piece: piece should inherit from Piece
-        :return: None
-        """
-        self._removed_pieces.append(piece)
+    def undo_add_piece(self, piece):
+        p = self.piece(piece.location)
+        if p != piece:
+            raise ValueError('this piece is not at the location')
         self._pieces.remove(piece)
+        self._pieces_by_location[piece.location] = None
 
-    def undo_add(self, piece):
-        """ Undo adding a piece to the board
+    def remove_piece(self, piece):
+        self._pieces_by_location[piece.location] = None
 
-        :param piece: piece should inherit from Piece
-        :return: None
-        """
+    def undo_remove_piece(self, piece):
+        self._pieces_by_location[piece.location] = piece
+
+    def capture_piece(self, piece):
+        self.remove_piece(piece)
         self._pieces.remove(piece)
+        self._captured_pieces.append(piece)
 
-    def undo_remove(self, piece):
-        """ Undo removing (aka capturing) a piece from the board
-
-        :param piece: piece should inherit from Piece
-        :return: None
-        """
-        self._removed_pieces.remove(piece)
+    def undo_capture_piece(self, piece):
+        self.undo_remove_piece(piece)
         self._pieces.append(piece)
+        self._captured_pieces.remove(piece)
 
-    def promote_pawn(self, pawn):
+    def move_piece(self, piece, new_location):
+        if not self.empty(new_location):
+            raise ValueError('piece is already present at {}'.format(new_location))
+        # remove the piece from the old location
+        self.remove_piece(piece)
+        # add the piece to the new location
+        self._pieces_by_location[new_location] = piece
+
+    def promote_pawn(self, pawn, promoted_piece_class):
         """ Promote a pawn from the board
 
         :param pawn: Pawn class
         :return: None
         """
-        self._pieces.remove(pawn)
+        # remove the pawn
+        self.remove_piece(pawn)
+        # store the pawn in promoted pieces
         self._promoted_pawns.append(pawn)
+        # create the new piece
+        promoted_piece_class(pawn.location, pawn.player, self)
 
     def undo_promote_pawn(self, pawn, promoted_piece):
         """ Undo the pawn promotion and creation of a new piece
@@ -106,9 +114,12 @@ class Board:
         :return: None
         :return:
         """
-        self._pieces.remove(promoted_piece)
+        # remove the promoted piece
+        self.remove_piece(promoted_piece)
+        # undo remove the pawn
+        self.undo_remove_piece(pawn)
+        # remove the pawn from promoted storage
         self._promoted_pawns.remove(pawn)
-        self._pieces.append(pawn)
 
     def move(self, move):
         """ Make a move on the board and update the current player to the next player.  Validation of the move
@@ -122,22 +133,23 @@ class Board:
             move.piece.move(move.new_location)
             move.rook_piece.move(move.rook_new_location)
         elif move.en_passant:
-            # move the pawn and capture the pawn
+            # capture the pawn
+            self.capture_piece(move.captured_piece)
+            # move pawn to new location
             move.piece.move(move.new_location)
-            self.remove(move.captured_piece)
         elif move.promotion:
             # capture piece
             if move.captured_piece:
-                self.remove(move.captured_piece)
-            # remove the pawn from the board
-            self.promote_pawn(move.piece)
-            # create the new promoted piece
-            move.promotion_piece_class(move.new_location, move.piece.player, self)
+                self.capture_piece(move.captured_piece)
+            # move the pawn
+            move.piece.move(move.new_location)
+            # promote pawn to new type
+            self.promote_pawn(move.piece, move.promotion_piece_class)
         else:
             # standard moves
-            move.piece.move(move.new_location)
             if move.captured_piece:
-                self.remove(move.captured_piece)
+                self.capture_piece(move.captured_piece)
+            move.piece.move(move.new_location)
 
         self.turn = self.turn.opponent()
         self._moves.append(move)
@@ -153,28 +165,28 @@ class Board:
             move.piece.move(move.old_location, undo=True)
             move.rook_piece.move(move.rook_old_location, undo=True)
         elif move.en_passant:
-            # undo the pawn move and capture
+            # undo the capture
+            self.undo_capture_piece(move.captured_piece)
+            # move pawn back to original location
             move.piece.move(move.old_location, undo=True)
-            self.undo_remove(move.captured_piece)
         elif move.promotion:
             # get the piece at the location of the promoted piece
             p = self.piece(move.new_location, move.piece.player)
 
-            # this should never happen
-            if p is None:
-                raise ValueError('failed to undo promotion move')
-
             # remove the promoted piece and restore the pawn
             self.undo_promote_pawn(move.piece, p)
 
+            # move the pawn back to the original location
+            move.piece.move(move.old_location, undo=True)
+
             # restore captured pieces
             if move.captured_piece:
-                self.undo_remove(move.captured_piece)
+                self.undo_capture_piece(move.captured_piece)
         else:
             # undo standard moves
             move.piece.move(move.old_location, undo=True)
             if move.captured_piece:
-                self.undo_remove(move.captured_piece)
+                self.undo_capture_piece(move.captured_piece)
         self.turn = self.turn.opponent()
 
     def random_move(self):
@@ -225,7 +237,7 @@ class Board:
         """
         player = self.turn if player is None else player
         s = 0
-        for p in self._removed_pieces:
+        for p in self._captured_pieces:
             if p.player != player:
                 s += p.VALUE
         return s
@@ -239,6 +251,13 @@ class Board:
         """
         king = list(self.pieces(piece_class=King, player=player))[0]
         return king.checked(location)
+
+    def status(self):
+        check = self.check(self.turn)
+        valid_moves = len(list(self.valid_moves()))
+        draw = valid_moves == 0 and not check
+        checkmate = valid_moves == 0 and check
+        return check, draw, checkmate
 
     def draw(self):
         """ Check if the game is a draw (current player has no valid moves but is not in check)
@@ -294,9 +313,9 @@ class Board:
         :param player: Player enum (defaults to both players)
         :return: Piece or None
         """
-        for p in self._pieces:
-            if p.location == location and (player is None or player == p.player):
-                return p
+        p = self._pieces_by_location[location]
+        if p is None or player is None or p.player == player:
+            return p
         return None
 
     def empty(self, location, player=None):

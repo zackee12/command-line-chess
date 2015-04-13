@@ -21,12 +21,8 @@ class Piece:
         self.board = board
         self._total_moves = 0
 
-        # ensure a piece doesn't already exist at the location
-        if not self.board.empty(location):
-            raise ValueError('board already contains a piece at {}'.format(location))
-
         # add self to the board
-        self.board.add(self)
+        self.board.add_piece(self)
 
     @property
     def moved(self):
@@ -43,6 +39,7 @@ class Piece:
         :param undo: boolean that indicates if total moves should be increased or descreased
         :return:
         """
+        self.board.move_piece(self, location)
         self.location = location
         self._total_moves += (-1 if undo else 1)
 
@@ -85,12 +82,15 @@ class SingleMovePiece(Piece):
         for row, col in self.MOVE_VECTORS:
             loc = self.location.offset(row, col)
             if loc is not None:
+                p = self.board.piece(loc)
+                if p is None or p.player != self.player:
+                    yield loc
                 # location is empty
-                if self.board.empty(loc):
-                    yield loc
+                #if self.board.empty(loc):
+                #    yield loc
                 # location is empty of the same player (aka opposing player is there)
-                elif self.board.empty(loc, player=self.player):
-                    yield loc
+                #elif self.board.empty(loc, player=self.player):
+                #    yield loc
 
 
 class MultipleMovePiece(Piece):
@@ -111,13 +111,19 @@ class MultipleMovePiece(Piece):
             while True:
                 loc = loc.offset(row, col)
                 if loc is not None:
-                    # location is empty
-                    if self.board.empty(loc):
+                    p = self.board.piece(loc)
+                    if p is None:
                         yield loc
-                    # location is empty of the same player (aka opposing player is there)
-                    elif self.board.empty(loc, player=self.player):
+                    elif p.player != self.player:
                         yield loc
                         break
+                    # location is empty
+                    #if self.board.empty(loc):
+                    #    yield loc
+                    # location is empty of the same player (aka opposing player is there)
+                    #elif self.board.empty(loc, player=self.player):
+                    #    yield loc
+                    #    break
                     # location contains a teammate
                     else:
                         break
