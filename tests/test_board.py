@@ -162,10 +162,9 @@ class TestBoard(TestCase):
         self.assertEquals(self.board.piece(move.new_location).__class__, Knight)
 
     def test_random_game(self):
-        for i in range(5):
-            if self.board.checkmate():
-                break
-            if self.board.draw():
+        for i in range(10):
+            check, draw, checkmate = self.board.status()
+            if checkmate or draw:
                 break
 
             self.assertEquals(len(self.board._moves), i)

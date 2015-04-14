@@ -16,15 +16,16 @@ if __name__ == '__main__':
     # game loop
     while True:
         # if checkmate then end the game
-        if board.checkmate():
+        check, draw, checkmate = board.status()
+        if checkmate:
             print('{} wins by checkmate'.format(Player.opponent(board.turn)))
             break
         # if draw then end the game
-        if board.draw():
+        if draw:
             print('draw!')
             break
         # print check message
-        if board.check(board.turn):
+        if check:
             print('check!!!')
 
         # if a human then ask for input

@@ -264,18 +264,16 @@ class Board:
 
         :return: boolean
         """
-        if len(list(self.valid_moves())) == 0 and not self.check(self.turn):
-            return True
-        return False
+        check, draw, checkmate = self.status()
+        return draw
 
     def checkmate(self):
         """ Check if the game is in checkmate (current player has no valid moves and is in check)
 
         :return: boolean
         """
-        if len(list(self.valid_moves())) == 0 and self.check(self.turn):
-            return True
-        return False
+        check, draw, checkmate = self.status()
+        return checkmate
 
     def last_move(self):
         """ Get the last move if exists else returns None
