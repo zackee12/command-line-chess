@@ -22,6 +22,8 @@ class Location:
             raise ValueError("'{}' is not a valid location")
 
         self.row, self.col = row, col.lower()
+        self._row = self.ROWS.index(self.row)
+        self._col = self.COLS.index(self.col)
 
     @property
     def color(self):
@@ -43,8 +45,8 @@ class Location:
         :param rows: number of rows to offset by (+/-)
         :return: Location or None if out of bounds
         """
-        col = self.COLS.index(self.col) + cols
-        row = self.ROWS.index(self.row) + rows
+        col = self._col + cols
+        row = self._row + rows
         if 0 <= col < len(self.COLS) and 0 <= row < len(self.ROWS):
             return Location(self.ROWS[row], self.COLS[col])
         return None
