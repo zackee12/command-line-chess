@@ -55,7 +55,7 @@ def cmd(board):
     :return:  Move class or str (e.g. 'q', 'r', 'l', 's')
     """
     while True:
-        text = input('{}: enter command: '.format(board.turn))
+        text = input('{}: enter command: '.format(board.current_player))
         try:
             cmd = parse(board, text)
         except IOError as e:
@@ -100,7 +100,7 @@ def create_move(board, from_location, to_location, promotion_class=None):
     :return: Move
     """
     # try to get the piece at origin location
-    p = board.piece(from_location, board.turn)
+    p = board.piece(from_location, board.current_player)
     if p is None:
         raise IOError('{} has no piece at {}'.format(board.turn, from_location))
 

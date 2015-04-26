@@ -48,7 +48,8 @@ if __name__ == '__main__':
                 pass
         else:
             # ai turn
-            #move = board.random_move()
+            # move = board.random_move()
+            print('ai thinking...')
             move = board.recommended_move()
             board.move(move)
             print('{} moved {}'.format(board.current_player.opponent(), board.last_move()))
