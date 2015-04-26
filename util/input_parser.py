@@ -102,7 +102,7 @@ def create_move(board, from_location, to_location, promotion_class=None):
     # try to get the piece at origin location
     p = board.piece(from_location, board.current_player)
     if p is None:
-        raise IOError('{} has no piece at {}'.format(board.turn, from_location))
+        raise IOError('{} has no piece at {}'.format(board.current_player, from_location))
 
     # check all moves for a match in from and to location as well as promotion and promotion class
     for move in p.moves():
