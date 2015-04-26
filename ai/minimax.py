@@ -2,7 +2,7 @@
 
 
 def minimax(game, player, depth, max_depth):
-    if game.game_over() or depth > max_depth:
+    if game.game_over() or depth >= max_depth:
         return game.heuristic_value(player), []
 
     best_score = -float('inf') if game.current_player == player else float('inf')
@@ -41,7 +41,7 @@ def alphabeta(game, player, depth, max_depth, alpha, beta):
     :return:  score, list of moves
     """
     # base case - game over or depth exceeded
-    if game.game_over() or depth > max_depth:
+    if game.game_over() or depth >= max_depth:
         return game.heuristic_value(player, depth), []
 
     # init best score to worst possible
