@@ -72,28 +72,32 @@ class Board:
         self._pieces_by_location[piece.location] = None
 
     def remove_piece(self, piece):
+        self._pieces.remove(piece)
         self._pieces_by_location[piece.location] = None
 
     def undo_remove_piece(self, piece):
+        self._pieces.append(piece)
         self._pieces_by_location[piece.location] = piece
 
     def capture_piece(self, piece):
         self.remove_piece(piece)
-        self._pieces.remove(piece)
+        #self._pieces.remove(piece)
         self._captured_pieces.append(piece)
 
     def undo_capture_piece(self, piece):
         self.undo_remove_piece(piece)
-        self._pieces.append(piece)
+        #self._pieces.append(piece)
         self._captured_pieces.remove(piece)
 
     def move_piece(self, piece, new_location):
         if not self.empty(new_location):
-            raise ValueError('piece is already present at {}'.format(new_location))
+            raise ValueError('cannot move {} from {} to {}: location is not empty'
+                             .format(piece.__class__.__name__, piece.location, new_location))
         # remove the piece from the old location
         self.remove_piece(piece)
         # add the piece to the new location
-        self._pieces_by_location[new_location] = piece
+        piece.location = new_location
+        self.add_piece(piece)
 
     def promote_pawn(self, pawn, promoted_piece_class):
         """ Promote a pawn from the board
@@ -261,6 +265,12 @@ class Board:
         return draw or checkmate
 
     def heuristic_value(self, player, depth):
+        """ Calculate the heuristic_value of the game state for minimax algorithm
+
+        :param player: maximizing player
+        :param depth: current depth in the search tree
+        :return: value of current game state
+        """
         check = self.check(self.current_player)
         valid_moves = len(list(self.valid_moves()))
         draw = valid_moves == 0 and not check
@@ -269,14 +279,19 @@ class Board:
         current_score = self.score(self.current_player, False)
         opponent_score = self.score(self.current_player.opponent(), False)
 
+        val = 0
         if checkmate:
-            val = -1000000
-        elif draw:
-            val = (current_score - opponent_score) * 1000
-        else:
-            val = 1 * valid_moves + 5 * current_score
+            # checkmate is worst possible outcome so should outweigh everything
+            val += -1000000
+        if draw:
+            # a draw is undesirable if current player is beating the opponent
+            # a draw is desirable if current player is losing
+            val += (current_score - opponent_score) * 1000
 
-        # prefer lower depth
+        # more valid moves plus a better score spread is desirable
+        val += 1 * valid_moves + 10 * (current_score - opponent_score)
+
+        # prefer lower depth in search tree
         val /= (depth + 1)
         return val if self.current_player == player else -val
 
@@ -377,7 +392,7 @@ class Board:
         :param player:
         :return:
         """
-        for p in self.pieces(player=player):
+        for p in list(self.pieces(player=player)):
             yield from p.moves()
 
     def __str__(self):
