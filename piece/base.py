@@ -40,7 +40,6 @@ class Piece:
         :return:
         """
         self.board.move_piece(self, location)
-        self.location = location
         self._total_moves += (-1 if undo else 1)
 
     def attacked_locations(self):
@@ -83,14 +82,9 @@ class SingleMovePiece(Piece):
             loc = self.location.offset(row, col)
             if loc is not None:
                 p = self.board.piece(loc)
+                # location is empty or has enemy player
                 if p is None or p.player != self.player:
                     yield loc
-                # location is empty
-                #if self.board.empty(loc):
-                #    yield loc
-                # location is empty of the same player (aka opposing player is there)
-                #elif self.board.empty(loc, player=self.player):
-                #    yield loc
 
 
 class MultipleMovePiece(Piece):
@@ -112,18 +106,13 @@ class MultipleMovePiece(Piece):
                 loc = loc.offset(row, col)
                 if loc is not None:
                     p = self.board.piece(loc)
+                    # location is empty
                     if p is None:
                         yield loc
+                    # location is has an enemy player
                     elif p.player != self.player:
                         yield loc
                         break
-                    # location is empty
-                    #if self.board.empty(loc):
-                    #    yield loc
-                    # location is empty of the same player (aka opposing player is there)
-                    #elif self.board.empty(loc, player=self.player):
-                    #    yield loc
-                    #    break
                     # location contains a teammate
                     else:
                         break
