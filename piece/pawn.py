@@ -47,9 +47,9 @@ class Pawn(Piece):
                 yield move
 
         up1 = self.location.offset(self.direction, 0)
-        up2 = up1.offset(self.direction, 0)
+
         # if space ahead is empty then can move
-        if self.board.empty(up1):
+        if up1 and self.board.empty(up1):
             # check move for promotions
             if up1.end_of_row:
                 for t in [Queen, Rook, Bishop, Knight]:
@@ -59,6 +59,7 @@ class Pawn(Piece):
                 yield Move(self, up1)
 
             # if on the first move the two spaces ahead is empty then can move
+            up2 = up1.offset(self.direction, 0)
             if not self.moved and self.board.empty(up2):
                 yield Move(self, up2)
 
