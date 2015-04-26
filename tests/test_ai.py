@@ -2,10 +2,6 @@ from unittest import TestCase
 
 from board import Board
 from util.input_parser import parse
-from util.enums import Player, Side
-from piece import Pawn, Queen, Rook, Bishop, Knight, King
-from board.location import Location
-from util.printer import print_moves
 
 
 class TestBoard(TestCase):
