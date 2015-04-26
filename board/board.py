@@ -2,6 +2,7 @@ from board.location import Location
 from util.character_map import CharacterMap
 from piece import King, Queen, Rook, Bishop, Knight, Pawn
 from util.enums import Player, Side
+import ai.minimax
 import random
 
 
@@ -21,7 +22,7 @@ class Board:
         self._captured_pieces = []
         self._moves = []  # history of moves
         self.character_map = CharacterMap()  # piece character map
-        self.turn = Player.WHITE  # current player's turn
+        self.current_player = Player.WHITE  # current player's turn
 
         if new_game:
             self._create_royalty()
@@ -151,7 +152,7 @@ class Board:
                 self.capture_piece(move.captured_piece)
             move.piece.move(move.new_location)
 
-        self.turn = self.turn.opponent()
+        self.current_player = self.current_player.opponent()
         self._moves.append(move)
 
     def undo_move(self):
@@ -187,23 +188,14 @@ class Board:
             move.piece.move(move.old_location, undo=True)
             if move.captured_piece:
                 self.undo_capture_piece(move.captured_piece)
-        self.turn = self.turn.opponent()
-
-    def random_move(self):
-        """ Get a random move from the current player's valid moves
-
-        :return: Move
-        """
-        moves = list(self.valid_moves())
-        index = random.randint(0, len(moves)-1)
-        self.move(moves[index])
+        self.current_player = self.current_player.opponent()
 
     def valid_moves(self):
         """ Get all valid moves for the current player
 
         :return: Move generator
         """
-        for move in self.possible_moves(self.turn):
+        for move in self.possible_moves(self.current_player):
             if self.valid_move(move):
                 yield move
 
@@ -216,29 +208,34 @@ class Board:
         # castle moves can't move king through an attacked area
         if move.castle:
             if move.castle_side == Side.KING:
-                if self.check(self.turn, move.new_location.offset(0, -1)):
+                if self.check(self.current_player, move.new_location.offset(0, -1)):
                     return False
             elif move.castle_side == Side.QUEEN:
-                if self.check(self.turn, move.new_location.offset(0, 1)):
+                if self.check(self.current_player, move.new_location.offset(0, 1)):
                     return False
             else:
                 raise ValueError('uh oh!!! not sure what happened')
         # make the move and see if the player is in check
         self.move(move)
-        check = self.check(self.turn.opponent())
+        check = self.check(self.current_player.opponent())
         self.undo_move()
         return not check
 
-    def score(self, player=None):
+    def score(self, player=None, captured=True):
         """ Get the score for a given player (defaults to the current player)
 
         :param player: Player Enum
+        :param captured: boolean to count captured pieces (True) vs counting pieces in play (False)
         :return: score as integer
         """
-        player = self.turn if player is None else player
+        player = self.current_player if player is None else player
         s = 0
-        for p in self._captured_pieces:
-            if p.player != player:
+        if captured:
+            for p in self._captured_pieces:
+                if p.player != player:
+                    s += p.VALUE
+        else:
+            for p in self.pieces(player=player):
                 s += p.VALUE
         return s
 
@@ -253,11 +250,51 @@ class Board:
         return king.checked(location)
 
     def status(self):
-        check = self.check(self.turn)
+        check = self.check(self.current_player)
         valid_moves = len(list(self.valid_moves()))
         draw = valid_moves == 0 and not check
         checkmate = valid_moves == 0 and check
         return check, draw, checkmate
+
+    def game_over(self):
+        check, draw, checkmate = self.status()
+        return draw or checkmate
+
+    def heuristic_value(self, player, depth):
+        check = self.check(self.current_player)
+        valid_moves = len(list(self.valid_moves()))
+        draw = valid_moves == 0 and not check
+        checkmate = valid_moves == 0 and check
+
+        current_score = self.score(self.current_player, False)
+        opponent_score = self.score(self.current_player.opponent(), False)
+
+        if checkmate:
+            val = -1000000
+        elif draw:
+            val = (current_score - opponent_score) * 1000
+        else:
+            val = 1 * valid_moves + 5 * current_score
+
+        # prefer lower depth
+        val /= (depth + 1)
+        return val if self.current_player == player else -val
+
+    def random_move(self):
+        """ Get a random move from the current player's valid moves
+
+        :return: Move
+        """
+        return random.choice(list(self.valid_moves()))
+
+    def recommended_move(self, depth=2):
+        """ Use minimax ai to determine a move
+
+        :param depth: Depth to search in minimax tree
+        :return: Move
+        """
+        score, moves = ai.minimax.alphabeta(self, self.current_player, 0, depth, -float('inf'), float('inf'))
+        return random.choice(moves)
 
     def draw(self):
         """ Check if the game is a draw (current player has no valid moves but is not in check)

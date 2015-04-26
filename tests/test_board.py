@@ -168,7 +168,8 @@ class TestBoard(TestCase):
                 break
 
             self.assertEquals(len(self.board._moves), i)
-            self.board.random_move()
+            move = self.board.random_move()
+            self.board.move(move)
 
     def test_score(self):
         self.assertEquals(self.board2.score(Player.BLACK), 0)
@@ -178,6 +179,13 @@ class TestBoard(TestCase):
         k = Knight(Location(3, 'a'), Player.WHITE, self.board2)
         self.board2.capture_piece(k)
         self.assertEquals(self.board2.score(Player.BLACK), Pawn.VALUE + Knight.VALUE)
+
+    def test_score_not_captured(self):
+        self.assertEquals(self.board2.score(Player.WHITE, False), 0)
+        p = Pawn(Location(2, 'a'), Player.WHITE, self.board2)
+        self.assertEquals(self.board2.score(Player.WHITE, False), Pawn.VALUE)
+        k = Knight(Location(3, 'a'), Player.WHITE, self.board2)
+        self.assertEquals(self.board2.score(Player.WHITE, False), Pawn.VALUE + Knight.VALUE)
 
     def test_last_move(self):
         self.assertEquals(self.board2.last_move(), None)

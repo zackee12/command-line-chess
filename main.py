@@ -18,7 +18,7 @@ if __name__ == '__main__':
         # if checkmate then end the game
         check, draw, checkmate = board.status()
         if checkmate:
-            print('{} wins by checkmate'.format(Player.opponent(board.turn)))
+            print('{} wins by checkmate'.format(Player.opponent(board.current_player)))
             break
         # if draw then end the game
         if draw:
@@ -29,7 +29,7 @@ if __name__ == '__main__':
             print('check!!!')
 
         # if a human then ask for input
-        if player is None or board.turn == player:
+        if player is None or board.current_player == player:
             cmd = input_parser.cmd(board)
 
             if isinstance(cmd, Move):  # move
@@ -48,7 +48,9 @@ if __name__ == '__main__':
                 pass
         else:
             # ai turn
-            board.random_move()
-            print('{} moved {}'.format(board.turn.opponent(), board.last_move()))
+            #move = board.random_move()
+            move = board.recommended_move()
+            board.move(move)
+            print('{} moved {}'.format(board.current_player.opponent(), board.last_move()))
             printer.print_board(board)
 
