@@ -52,3 +52,14 @@ class TestBoard(TestCase):
         move = self.board.recommended_move(1)
         desired_move = parse(self.board, 'c8 e6')
         self.assertEquals(move, desired_move)
+
+    def test_ai_game(self):
+        # run to try and find failures
+        while True:
+            check, draw, checkmate = self.board.status()
+            if checkmate or draw:
+                break
+
+            move = self.board.recommended_move(2)
+            print(move)
+            self.board.move(move)
