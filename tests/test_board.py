@@ -5,7 +5,6 @@ from util.input_parser import parse
 from util.enums import Player, Side
 from piece import Pawn, Queen, Rook, Bishop, Knight, King
 from board.location import Location
-from util.printer import print_moves
 
 
 class TestBoard(TestCase):
@@ -73,6 +72,8 @@ class TestBoard(TestCase):
         self.assertEquals(self.board.score(Player.WHITE), 0)
         self.board.move(move)
         self.assertEquals(self.board.score(Player.WHITE), Pawn.VALUE)
+        self.board.undo_move()
+        self.assertEquals(self.board.score(Player.WHITE), 0)
 
     def test_king_side_castle(self):
         moves = [
@@ -87,9 +88,10 @@ class TestBoard(TestCase):
 
         move = parse(self.board, 'e1 g1')  # white
         self.assertTrue(move.castle)
-        self.assertTrue(move in self.board.valid_moves())
         self.assertEquals(move.castle_side, Side.KING)
         self.assertEquals(str(move), 'O-O')
+        valid_moves = list(self.board.valid_moves())
+        self.assertTrue(move in valid_moves)
         self.board.move(move)
 
     def test_queen_side_castle(self):
@@ -160,6 +162,11 @@ class TestBoard(TestCase):
 
         self.board.move(move)
         self.assertEquals(self.board.piece(move.new_location).__class__, Knight)
+        self.board.undo_move()
+        p1 = self.board.piece(move.old_location)
+        p2 = self.board.piece(move.new_location, move.piece.player)
+        self.assertEquals(p1.__class__, Pawn)
+        self.assertEquals(p2, None)
 
     def test_random_game(self):
         for i in range(10):
